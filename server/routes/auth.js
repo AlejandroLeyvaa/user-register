@@ -4,6 +4,11 @@ const boom = require('@hapi/boom');
 const jwt = require('jsonwebtoken');
 const ApiKeysService = require('../services/apiKeys');
 const UsersService = require('../services/users');
+const validationHandler = require('../utils/middleware/validationHandler');
+
+const {
+  createUserSchema
+} = require('../utils/schemas/users')
 
 const { config } = require('../config');
 
@@ -46,7 +51,7 @@ function authApi(app) {
           const payload = {
             sub: id,
             name,
-            email: email.toLowerCase(),
+            email,
             scopes: apiKey.scopes,
           };
 
@@ -62,11 +67,11 @@ function authApi(app) {
     })(req, res, next);
   });
 
-  router.post('/sign-up', async function (req, res, next) {
+  router.post('/sign-up', validationHandler(createUserSchema), async function (req, res, next) {
     const { body: user } = req;
 
     try {
-      const createdUserId = await usersServices.CreatUser({ user });
+      const createdUserId = await usersServices.creatUser({ user });
 
       res.status(201).json({
         data: createdUserId,
